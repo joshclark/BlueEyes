@@ -20,8 +20,6 @@ namespace BlueEyes.Tests
         [Fact]
         public void WrittenDatesCanBeReadBackCorrectly()
         {
-            var start = new DateTime(2017, 5, 23, 11, 23, 23, DateTimeKind.Utc);
-                
             var dates = new[]
             {
                 IncrementDate(0),
@@ -43,6 +41,7 @@ namespace BlueEyes.Tests
             {
                 writer.AppendTimestamp(date);
             }
+
 
             var actual = new List<DateTime>();
             var reader = new DateTimeReader(buffer);

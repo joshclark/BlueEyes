@@ -49,6 +49,7 @@
     <Compile Include="DateTimeReader.cs" />
     <Compile Include="DatetimeWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeSeries.cs" />
     <Compile Include="TimestampEncodingDetails.cs" />
     <Compile Include="ValueReader.cs" />
     <Compile Include="ValueWriter.cs" />

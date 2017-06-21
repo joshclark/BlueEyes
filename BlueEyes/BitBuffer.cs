@@ -11,6 +11,8 @@ namespace BlueEyes
     public class BitBuffer : IDisposable
     {
         private const int DefaultBufferSize = 512;
+        private const int UnusedBitsInLastByteBitLength = 3;
+        
         private readonly MemoryStream _stream;
         private int _numBits;
         private int _bitPostion;
@@ -23,33 +25,44 @@ namespace BlueEyes
         {
             _stream = new MemoryStream(size);
             _numBits = 0;
-            _bitPostion = 0;
+            _bitPostion = UnusedBitsInLastByteBitLength;
+
+            // Reserve space for the unused bit count;
+            AddValue(0, UnusedBitsInLastByteBitLength);
         }
 
-        public BitBuffer(byte[] buffer) : this(DefaultBufferSize)
+        public BitBuffer(byte[] buffer) 
         {
             _stream = new MemoryStream(buffer, 0, buffer.Length, true, true);
-            _numBits = 0;
-            _bitPostion = 0;
+
+            int unusedBitsInLastByte = (int) ReadValue(UnusedBitsInLastByteBitLength);
+            _numBits = buffer.Length * 8 - unusedBitsInLastByte; 
         }
 
         public bool IsAtEndOfBuffer => _bitPostion >= _numBits;
+
+        public int Size => _numBits;
 
         public void Dispose()
         {
             _stream.Dispose();
         }
 
-        public byte[] GetBuffer() => _stream.GetBuffer();
-
         public void MoveToStartOfBuffer()
         {
-            _bitPostion = 0;
+            _bitPostion = UnusedBitsInLastByteBitLength;
         }
 
-        public void WriteTo(Stream stream)
+        public byte[] ToArray()
         {
-            _stream.WriteTo(stream);
+            // Update the available bits in the last byte counter stored
+            // at the start of the buffer.
+            int bitsAvailable = BitsAvailableInLastByte();
+            byte bitsUnusedShifted = (byte)(bitsAvailable << (8 - UnusedBitsInLastByteBitLength));
+            byte existingFirstByte = GetByteAt(0);
+            SetByteAt(0, (byte)(existingFirstByte | bitsUnusedShifted));
+
+            return _stream.ToArray();
         }
 
         public void AddValue(long value, int bitsInValue)
@@ -65,7 +78,7 @@ namespace BlueEyes
                 return;
             }
 
-            int bitsAvailable = ((_numBits & 0x7) != 0) ? (8 - (_numBits & 0x7)) : 0;
+            int bitsAvailable = BitsAvailableInLastByte();
             _numBits += bitsInValue;
 
             if (bitsInValue <= bitsAvailable)
@@ -139,6 +152,11 @@ namespace BlueEyes
             return bits;
         }
 
+        private int BitsAvailableInLastByte()
+        {
+            int bitsAvailable = ((_numBits & 0x7) != 0) ? (8 - (_numBits & 0x7)) : 0;
+            return bitsAvailable;
+        }
 
         private byte GetLastByte()
         {
@@ -150,13 +168,18 @@ namespace BlueEyes
 
         private void SetLastByte(byte newValue)
         {
+            SetByteAt(_stream.Length - 1, newValue);
+        }
+
+        private void SetByteAt(long offset, byte newValue)
+        {
             if (_stream.Length == 0)
                 _stream.WriteByte(newValue);
             else
-                _stream.GetBuffer()[_stream.Length - 1] = newValue;
+                _stream.GetBuffer()[offset] = newValue;
         }
 
-        private byte GetByteAt(int offset)
+        private byte GetByteAt(long offset)
         {
             return _stream.GetBuffer()[offset];
         }

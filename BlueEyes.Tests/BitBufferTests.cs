@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -44,10 +45,9 @@ namespace BlueEyes.Tests
                 buffer.AddValue(number.Number, number.BitCount);    
             }
 
-            var copyBuffer = new MemoryStream();
-            buffer.WriteTo(copyBuffer);
+            var copy = buffer.ToArray();
 
-            buffer = new BitBuffer(copyBuffer.GetBuffer());
+            buffer = new BitBuffer(copy);
             buffer.ReadValue(paddingBits);
 
             foreach (var number in numbers)
@@ -55,6 +55,27 @@ namespace BlueEyes.Tests
                 var actual = buffer.ReadValue(number.BitCount);
                 actual.Should().Be(number.Number);
             }
+        }
+
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(36)]
+        public void SizeIsStoredAndReadCorrectlyWhenExported(int bitsToWrite)
+        {
+            var writer = new BitBuffer();
+            writer.AddValue(1, bitsToWrite);
+            var expectedSize = writer.Size;
+
+            byte[] output = writer.ToArray();
+            var reader = new BitBuffer(output);
+
+            expectedSize.Should().Be(bitsToWrite + 3);
+            reader.Size.Should().Be(expectedSize);
+
+            var value = reader.ReadValue(bitsToWrite);
+            value.Should().Be(1);
         }
     }
 }
