@@ -1,7 +1,9 @@
 ﻿using System;
+using ProtoBuf;
 
 namespace BlueEyes.TestApp
 {
+    [ProtoContract]
     struct DataPoint
     {
         public DataPoint(DateTime timestamp, double value)
@@ -20,7 +22,10 @@ namespace BlueEyes.TestApp
 
 
 
+        [ProtoMember(1)]
         public DateTime Timestamp { get; set; }
+
+        [ProtoMember(2)]
         public double Value { get; set; }
     }
 }

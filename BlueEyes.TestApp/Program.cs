@@ -47,9 +47,9 @@ namespace BlueEyes.TestApp
             var cpuLoadDetail = LoadTestData<CpuLoad>(Path.Combine(dataDir, "CPULoad_Detail.csv"));
 //            var cpuLoadHourly = LoadTestData<CpuLoad>(Path.Combine(dataDir, "CPULoad_Hourly.csv"));
 
-            //var dataPoints = responseTimeDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgResponseTime)).ToArray();
+            var dataPoints = responseTimeDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgResponseTime)).ToArray();
             //var dataPoints = largeInterfaceTrafficDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.OutAveragebps)).ToArray();
-            var dataPoints = cpuLoadDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgPercentMemoryUsed)).ToArray();
+            //var dataPoints = cpuLoadDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgPercentMemoryUsed)).ToArray();
 
             var baseLineResults = TestStore(dataPoints, new SimpleArrayStore());
 
@@ -58,6 +58,7 @@ namespace BlueEyes.TestApp
                 baseLineResults,
                 TestStore(dataPoints, new JsonStore()),
                 TestStore(dataPoints, new BsonStore()),
+                TestStore(dataPoints, new ProtobufStore()),
                 TestStore(dataPoints, new ZippedJsonStore()),
                 TestStore(dataPoints, new BlueEyesStore()),
             };
