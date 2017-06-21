@@ -40,14 +40,16 @@ namespace BlueEyes.TestApp
             var dataDir = @".\Data\";
             var responseTimeDetail = LoadTestData<ResponseTime>(Path.Combine(dataDir, "ResponseTime_Detail.csv"));
 //            var responseTimeHourly = LoadTestData<ResponseTime>(Path.Combine(dataDir, "ResponseTime_Hourly.csv"));
-//            var largeInterfaceTrafficDetail = LoadTestData<InterfaceTraffic>(Path.Combine(dataDir, "LargeInterfaceTraffic_Detail.csv"));
+            var largeInterfaceTrafficDetail = LoadTestData<InterfaceTraffic>(Path.Combine(dataDir, "LargeInterfaceTraffic_Detail.csv"));
 //            var largeInterfaceTrafficHourly = LoadTestData<InterfaceTraffic>(Path.Combine(dataDir, "LargeInterfaceTraffic_Hourly.csv"));
 //            var smallInterfaceTrafficDetail = LoadTestData<InterfaceTraffic>(Path.Combine(dataDir, "SmallInterfaceTraffic_Detail.csv"));
 //            var smallInterfaceTrafficHourly = LoadTestData<InterfaceTraffic>(Path.Combine(dataDir, "SmallInterfaceTraffic_Hourly.csv"));
-//            var cpuLoadDetail = LoadTestData<CpuLoad>(Path.Combine(dataDir, "CPULoad_Detail.csv"));
+            var cpuLoadDetail = LoadTestData<CpuLoad>(Path.Combine(dataDir, "CPULoad_Detail.csv"));
 //            var cpuLoadHourly = LoadTestData<CpuLoad>(Path.Combine(dataDir, "CPULoad_Hourly.csv"));
 
-            var dataPoints = responseTimeDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgResponseTime)).ToArray();
+            //var dataPoints = responseTimeDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgResponseTime)).ToArray();
+            //var dataPoints = largeInterfaceTrafficDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.OutAveragebps)).ToArray();
+            var dataPoints = cpuLoadDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.AvgPercentMemoryUsed)).ToArray();
 
             var baseLineResults = TestStore(dataPoints, new SimpleArrayStore());
 
@@ -55,19 +57,19 @@ namespace BlueEyes.TestApp
             {
                 baseLineResults,
                 TestStore(dataPoints, new JsonStore()),
-                TestStore(dataPoints, new ZippedJsonStore()),
                 TestStore(dataPoints, new BsonStore()),
+                TestStore(dataPoints, new ZippedJsonStore()),
                 TestStore(dataPoints, new BlueEyesStore()),
             };
 
 
 
-            var format = "| {0,-20} | {1,-20} | {2,-20} | {3,-20} |";
+            var format = "| {0,-20} | {1,-20} | {2,-20} | {3,-20} | {4, -20} |";
 
             Console.WriteLine("Results\n");
 
-            Console.WriteLine(format, "Name", "Reads", "Writes", "Size");
-            Console.WriteLine(format, "----", "-----", "------", "----");
+            Console.WriteLine(format, "Name", "Reads", "Writes", "Size", "Bits Per Point");
+            Console.WriteLine(format, "----", "-----", "------", "----", "--------------");
 
 
             foreach (var result in results)
@@ -76,7 +78,8 @@ namespace BlueEyes.TestApp
                     result.Name, 
                     result.Reads(baseLineResults), 
                     result.Writes(baseLineResults), 
-                    result.Size(baseLineResults) );
+                    result.Size(baseLineResults),
+                    result.PointSize(baseLineResults) );
             }
 
             Console.WriteLine("\n");
@@ -135,6 +138,7 @@ namespace BlueEyes.TestApp
 
             private double ReadPointsPerSecond => PointCount / TimeSpan.FromTicks(LoadTime).TotalSeconds;
             private double WritePointsPerSecond => PointCount / TimeSpan.FromTicks(SaveTime).TotalSeconds;
+            private double BitsPerPoint => BufferSize * 8.0 / PointCount;
 
             public string Reads(TestResults baseLineResults)
             {
@@ -154,7 +158,15 @@ namespace BlueEyes.TestApp
             {
                 var size = BufferSize /1024.0;
                 var percentOfBaseline = 100 * BufferSize / baseLineResults.BufferSize;
-                return $"{size:F1} KB ({percentOfBaseline}%)";
+                return $"{size:F1} KB ({percentOfBaseline:F1}%)";
+            }
+
+            public string PointSize(TestResults baseLineResults)
+            {
+                double bitsPerPoint = BitsPerPoint;
+                var percentOfBaseline = 100 * BitsPerPoint / baseLineResults.BitsPerPoint;
+
+                return $"{bitsPerPoint:F1} bits ({percentOfBaseline:F1}%)";
             }
         }
     }
