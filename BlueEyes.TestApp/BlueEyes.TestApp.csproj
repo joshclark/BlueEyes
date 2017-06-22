@@ -57,10 +57,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmark.cs" />
     <Compile Include="DataPoint.cs" />
     <Compile Include="ISeriesStore.cs" />
     <Compile Include="Models\CpuLoad.cs" />
     <Compile Include="Models\InterfaceTraffic.cs" />
+    <Compile Include="PerfTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\ResponseTime.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="Stores\ZippedJsonStore.cs" />
     <Compile Include="Stores\JsonStore.cs" />
     <Compile Include="Stores\SimpleArrayStore.cs" />
+    <Compile Include="TestData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
