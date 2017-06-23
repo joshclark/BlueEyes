@@ -16,7 +16,7 @@ namespace BlueEyes.TestApp
             var dataPoints = TestData.Instance.LargeInterfaceTrafficDetail.Select(x => DataPoint.CreateAssumingLocalTimeStamp(x.DateTime, x.OutAveragebps)).ToArray();
             var store = new BlueEyesStore();
 
-            int count = 1000;
+            int count = 100;
 
             Console.WriteLine($"Processing {dataPoints.Length} points {count} times...");
 

@@ -60,8 +60,7 @@ namespace BlueEyes
             // at the start of the buffer.
             int bitsAvailable = BitsAvailableInLastByte();
             byte bitsUnusedShifted = (byte)(bitsAvailable << (8 - UnusedBitsInLastByteBitLength));
-            byte existingFirstByte = GetByteAt(0);
-            SetByteAt(0, (byte)(existingFirstByte | bitsUnusedShifted));
+            SetByteAt(0, (byte)(_buffer[0] | bitsUnusedShifted));
 
             byte[] copy = new byte[_length];
             Buffer.BlockCopy(_buffer, 0, copy, 0, _length);
@@ -131,7 +130,7 @@ namespace BlueEyes
             for (int i = 0; i < bitsToRead; i++)
             {
                 value <<= 1;
-                ulong bit = (ulong)((GetByteAt(_bitPostion >> 3) >> (7 - (_bitPostion & 0x7))) & 1);
+                ulong bit = (ulong)((_buffer[_bitPostion >> 3] >> (7 - (_bitPostion & 0x7))) & 1);
                 value += bit;
                 _bitPostion++;
             }
@@ -181,11 +180,6 @@ namespace BlueEyes
                 WriteByte(newValue);
             else
                 _buffer[offset] = newValue;
-        }
-
-        private byte GetByteAt(long offset)
-        {
-            return _buffer[offset];
         }
 
         private void WriteByte(byte next)
