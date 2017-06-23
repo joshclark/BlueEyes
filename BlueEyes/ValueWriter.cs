@@ -51,7 +51,7 @@ namespace BlueEyes
 
             _buffer.AddValue(1, 1);
 
-            var currentBlockInfo = BlockInfo.CalulcateBlockInfo(xorWithPrevious);
+            var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong) xorWithPrevious);
             int expectedSize = Constants.LeadingZerosLengthBits + Constants.BlockSizeLengthBits + currentBlockInfo.BlockSize;
 
             if (currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
