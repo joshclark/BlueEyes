@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace BlueEyes
 {
@@ -8,12 +7,15 @@ namespace BlueEyes
     /// To test the byte shifting, run the same test but with bit padding at the front (from 0 - 7) so that each 
     /// of the value written in get moved all thr way through the breaks in the byte boundaries.
     /// </summary>
-    public class BitBuffer : IDisposable
+    public class BitBuffer 
     {
         private const int DefaultBufferSize = 512;
         private const int UnusedBitsInLastByteBitLength = 3;
         
-        private readonly MemoryStream _stream;
+        private byte[] _buffer;
+        private int _capacity;
+        private int _length;
+
         private int _numBits;
         private int _bitPostion;
 
@@ -23,7 +25,9 @@ namespace BlueEyes
 
         public BitBuffer(int size)
         {
-            _stream = new MemoryStream(size);
+            _capacity = size;
+            _buffer = new byte[_capacity];
+            _length = 0;
             _numBits = 0;
             _bitPostion = UnusedBitsInLastByteBitLength;
 
@@ -33,20 +37,17 @@ namespace BlueEyes
 
         public BitBuffer(byte[] buffer) 
         {
-            _stream = new MemoryStream(buffer, 0, buffer.Length, true, true);
+            _buffer = buffer;
+            _length = _buffer.Length;
+            _capacity = _length;
 
             int unusedBitsInLastByte = (int) ReadValue(UnusedBitsInLastByteBitLength);
-            _numBits = buffer.Length * 8 - unusedBitsInLastByte; 
+            _numBits = _length * 8 - unusedBitsInLastByte; 
         }
 
         public bool IsAtEndOfBuffer => _bitPostion >= _numBits;
 
         public int Size => _numBits;
-
-        public void Dispose()
-        {
-            _stream.Dispose();
-        }
 
         public void MoveToStartOfBuffer()
         {
@@ -62,7 +63,10 @@ namespace BlueEyes
             byte existingFirstByte = GetByteAt(0);
             SetByteAt(0, (byte)(existingFirstByte | bitsUnusedShifted));
 
-            return _stream.ToArray();
+            byte[] copy = new byte[_length];
+            Buffer.BlockCopy(_buffer, 0, copy, 0, _length);
+
+            return copy;
         }
 
         public void AddValue(long value, int bitsInValue)
@@ -102,7 +106,7 @@ namespace BlueEyes
             {
                 // We have enough bits to fill up an entire byte
                 byte next =  (byte) ((value >> (bitsLeft - 8)) & 0xFF);
-                _stream.WriteByte(next);
+                WriteByte(next);
                 bitsLeft -= 8;
             }
 
@@ -111,7 +115,7 @@ namespace BlueEyes
                 // Start a new byte with the rest of the bits
                 ulong mask = (ulong)((1 << bitsLeft) - 1L);
                 byte next = (byte)((value & mask) << (8 - bitsLeft));
-                _stream.WriteByte(next);
+                WriteByte(next);
             }
         }
 
@@ -120,7 +124,7 @@ namespace BlueEyes
             if (bitsToRead > 64)
                 throw new ArgumentException($"Unable to read more than 64 bits at a time.  Requested {bitsToRead} bits", nameof(bitsToRead));
 
-            if (_bitPostion + bitsToRead > _stream.Length * 8)
+            if (_bitPostion + bitsToRead > _length * 8)
                 throw new ArgumentException($"Not enough bits left in the buffer. Requested {bitsToRead} bits.  Current Position: {_bitPostion}", nameof(bitsToRead));
 
             ulong value = 0;
@@ -160,28 +164,45 @@ namespace BlueEyes
 
         private byte GetLastByte()
         {
-            if (_stream.Length == 0)
+            if (_length == 0)
                 return 0;
 
-            return _stream.GetBuffer()[_stream.Length - 1];
+            return _buffer[_length - 1];
         }
 
         private void SetLastByte(byte newValue)
         {
-            SetByteAt(_stream.Length - 1, newValue);
+            SetByteAt(_length - 1, newValue);
         }
 
         private void SetByteAt(long offset, byte newValue)
         {
-            if (_stream.Length == 0)
-                _stream.WriteByte(newValue);
+            if (_length == 0)
+                WriteByte(newValue);
             else
-                _stream.GetBuffer()[offset] = newValue;
+                _buffer[offset] = newValue;
         }
 
         private byte GetByteAt(long offset)
         {
-            return _stream.GetBuffer()[offset];
+            return _buffer[offset];
+        }
+
+        private void WriteByte(byte next)
+        {
+            if (_length >= _capacity)
+                GrowBuffer();
+
+            _buffer[_length++] = next;
+        }
+
+        private void GrowBuffer()
+        {
+            int newLength = _capacity * 2;
+            byte[] newBuffer = new byte[newLength];
+            Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _length);
+            _buffer = newBuffer;
+            _capacity = newLength;
         }
     }
 }
