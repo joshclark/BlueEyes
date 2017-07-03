@@ -1,0 +1,62 @@
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# branches to build
+branches:
+  # blacklist
+  except:
+    - gh-pages
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+cache:
+  - packages
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform: Any CPU
+
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
+
+os: Visual Studio 2017
+
+before_build:
+  - dotnet --info
+  - dotnet restore  
+
+build:
+  parallel: true           # enable MSBuild parallel builds
+  project: BlueEyes.sln    # path to Visual Studio solution or project
+
+after_build:
+  - dotnet pack .\BlueEyes\BlueEyes.csproj --configuration Release
+
+#---------------------------------#
+#       tests configuration       #
+#---------------------------------#
+test_script:
+  - cd .\BlueEyes.Tests\
+  - dotnet xunit -configuration Release -noshadow
+
+artifacts:
+  - path: '**\BlueEyes.*.nupkg' # find all NuGet packages recursively
+
+deploy:
+- provider: NuGet
+  api_key:
+    secure: WKJ6NmAjJkEIz6QyomINE8YOob/n2bFig+ImOa4XW3ZAH6JXucbIFSWVm76a9Y9G
+  on:
+    branch: master

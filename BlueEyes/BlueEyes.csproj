@@ -1,17 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\build\common.props" />
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
-    <Authors>Josh Clark</Authors>
-    <Description>A .NET implementation of Facebook's Gorilla time series compression algorithm</Description>
-    <PackageProjectUrl>https://github.com/joshclark/BlueEyes</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/joshclark/BlueEyes/blob/master/LICENSE.md</PackageLicenseUrl>
-    <Copyright>Copyright © Josh Clark 2017</Copyright>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <TreatSpecificWarningsAsErrors />
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>    
   </PropertyGroup>
 
   <ItemGroup>
