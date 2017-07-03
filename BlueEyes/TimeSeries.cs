@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlueEyes
 {
     public class TimeSeries
     {
-        private BitBuffer _buffer;
-        private DateTimeReader _dateReader;
-        private DatetimeWriter _dateWriter;
-        private ValueReader _valueReader;
-        private ValueWriter _valueWriter;
+        private readonly BitBuffer _buffer;
+        private readonly DateTimeReader _dateReader;
+        private readonly DatetimeWriter _dateWriter;
+        private readonly ValueReader _valueReader;
+        private readonly ValueWriter _valueWriter;
 
         public TimeSeries()
         {
