@@ -68,11 +68,6 @@ namespace BlueEyes
             return copy;
         }
 
-        public void AddValue(long value, int bitsInValue)
-        {
-            AddValue((ulong) value, bitsInValue);
-        }
-
         public void AddValue(ulong value, int bitsInValue)
         {
             if (bitsInValue == 0)

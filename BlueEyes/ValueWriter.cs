@@ -40,7 +40,7 @@ namespace BlueEyes
         public void AppendValue(double value)
         {
             long longValue = BitConverter.DoubleToInt64Bits(value);
-            long xorWithPrevious = _previousValue ^ longValue;
+            ulong xorWithPrevious = (ulong)(_previousValue ^ longValue);
 
             if (xorWithPrevious == 0)
             {
@@ -51,7 +51,7 @@ namespace BlueEyes
 
             _buffer.AddValue(1, 1);
 
-            var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong) xorWithPrevious);
+            var currentBlockInfo = BlockInfo.CalulcateBlockInfo(xorWithPrevious);
             int expectedSize = Constants.LeadingZerosLengthBits + Constants.BlockSizeLengthBits + currentBlockInfo.BlockSize;
 
             if (currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
@@ -62,7 +62,7 @@ namespace BlueEyes
                 _buffer.AddValue(1,1);
 
                 // Write the parts of the value that changed.
-                long blockValue = xorWithPrevious >> _previousBlockInfo.TrailingZeros;
+                ulong blockValue = xorWithPrevious >> _previousBlockInfo.TrailingZeros;
                 _buffer.AddValue(blockValue, _previousBlockInfo.BlockSize);
             }
             else
@@ -71,11 +71,11 @@ namespace BlueEyes
                 _buffer.AddValue(0, 1);
 
                 // Details about the new block information
-                _buffer.AddValue(currentBlockInfo.LeadingZeros, Constants.LeadingZerosLengthBits);
-                _buffer.AddValue(currentBlockInfo.BlockSize - Constants.BlockSizeAdjustment, Constants.BlockSizeLengthBits);
+                _buffer.AddValue((ulong)currentBlockInfo.LeadingZeros, Constants.LeadingZerosLengthBits);
+                _buffer.AddValue((ulong)currentBlockInfo.BlockSize - Constants.BlockSizeAdjustment, Constants.BlockSizeLengthBits);
 
                 // Write the parts of the value that changed.
-                long blockValue = xorWithPrevious >> currentBlockInfo.TrailingZeros;
+                ulong blockValue = xorWithPrevious >> currentBlockInfo.TrailingZeros;
                 _buffer.AddValue(blockValue, currentBlockInfo.BlockSize);
 
                 _previousBlockInfo = currentBlockInfo;

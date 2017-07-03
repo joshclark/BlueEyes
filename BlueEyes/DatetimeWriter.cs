@@ -42,7 +42,7 @@ namespace BlueEyes
             if (_hasStoredFirstValue == false)
             {
                 // Store the first timestamp as it.
-                _buffer.AddValue(timestamp, Constants.BitsForFirstTimestamp);
+                _buffer.AddValue((ulong)timestamp, Constants.BitsForFirstTimestamp);
                 _previousTimestamp = timestamp;
                 _previousTimestampDelta = Constants.DefaultDelta;
                 _hasStoredFirstValue = true;
@@ -70,11 +70,11 @@ namespace BlueEyes
             {
                 if (absValue < timestampEncoding.MaxValueForEncoding)
                 {
-                    _buffer.AddValue(timestampEncoding.ControlValue, timestampEncoding.ControlValueBitLength);
+                    _buffer.AddValue((ulong)timestampEncoding.ControlValue, timestampEncoding.ControlValueBitLength);
 
                     // Make this value between [0, 2^timestampEncodings[i].bitsForValue - 1]
                     long encodedValue = deltaOfDelta + timestampEncoding.MaxValueForEncoding;
-                    _buffer.AddValue(encodedValue, timestampEncoding.BitsForValue);
+                    _buffer.AddValue((ulong)encodedValue, timestampEncoding.BitsForValue);
 
                     break;
                 }
