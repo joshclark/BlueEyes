@@ -30,20 +30,16 @@ namespace BlueEyes.TestApp
 
             Console.WriteLine($"Time: {sw.ElapsedMilliseconds}ms. {dataPoints.Length * count / sw.Elapsed.TotalMilliseconds:F1} points/ms");
 
-
-            Console.WriteLine($"Processing {dataPoints.Length} points {count} times...");
-
-            var sw2 = Stopwatch.StartNew();
-            for (int i = 0; i < count; ++i)
-            {
-                byte[] bytes = SavePoints(dataPoints);
-                DataPoint[] points = LoadPoints(bytes);
-            }
-            sw2.Stop();
-            Console.WriteLine($"Baseline Time: {sw2.ElapsedMilliseconds}ms. {dataPoints.Length * count / sw2.Elapsed.TotalMilliseconds:F1} points/ms");
-
-
-
+//            Console.WriteLine($"Processing {dataPoints.Length} points {count} times...");
+//
+//            var sw2 = Stopwatch.StartNew();
+//            for (int i = 0; i < count; ++i)
+//            {
+//                byte[] bytes = SavePoints(dataPoints);
+//                DataPoint[] points = LoadPoints(bytes);
+//            }
+//            sw2.Stop();
+//            Console.WriteLine($"Baseline Time: {sw2.ElapsedMilliseconds}ms. {dataPoints.Length * count / sw2.Elapsed.TotalMilliseconds:F1} points/ms");
 
             return Task.CompletedTask;
         }

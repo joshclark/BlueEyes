@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace BlueEyes
 {
@@ -156,6 +157,7 @@ namespace BlueEyes
             return bitsAvailable;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte GetLastByte()
         {
             if (_length == 0)
@@ -164,11 +166,13 @@ namespace BlueEyes
             return _buffer[_length - 1];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetLastByte(byte newValue)
         {
             SetByteAt(_length - 1, newValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetByteAt(long offset, byte newValue)
         {
             if (_length == 0)
@@ -177,6 +181,7 @@ namespace BlueEyes
                 _buffer[offset] = newValue;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteByte(byte next)
         {
             if (_length >= _capacity)
@@ -185,6 +190,7 @@ namespace BlueEyes
             _buffer[_length++] = next;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void GrowBuffer()
         {
             int newLength = _capacity * 2;
