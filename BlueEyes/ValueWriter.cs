@@ -11,11 +11,13 @@ namespace BlueEyes
         private readonly BitBuffer _buffer;
         private long _previousValue;
         private BlockInfo _previousBlockInfo;
+        private bool _hasStoredFirstValue;
 
         public ValueWriter(BitBuffer buffer)
         {
             _buffer = buffer;
             _previousBlockInfo = new BlockInfo(0, 0);
+            _hasStoredFirstValue = false;
         }
 
         /// <summary>
@@ -54,7 +56,8 @@ namespace BlueEyes
             var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong) xorWithPrevious);
             int expectedSize = Constants.LeadingZerosLengthBits + Constants.BlockSizeLengthBits + currentBlockInfo.BlockSize;
 
-            if (currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
+            if (_hasStoredFirstValue &&
+                currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
                 currentBlockInfo.TrailingZeros >= _previousBlockInfo.TrailingZeros &&
                 _previousBlockInfo.BlockSize < expectedSize)
             {
@@ -79,6 +82,11 @@ namespace BlueEyes
                 _buffer.AddValue(blockValue, currentBlockInfo.BlockSize);
 
                 _previousBlockInfo = currentBlockInfo;
+                
+                if (!_hasStoredFirstValue)
+                {
+                    _hasStoredFirstValue = true;
+                }
             }
 
             _previousValue = longValue;
