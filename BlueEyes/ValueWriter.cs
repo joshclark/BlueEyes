@@ -42,6 +42,17 @@ namespace BlueEyes
         public void AppendValue(double value)
         {
             long longValue = BitConverter.DoubleToInt64Bits(value);
+            
+            if (_hasStoredFirstValue == false)
+            {
+                // Store the first value as is.
+                _previousBlockInfo = BlockInfo.CalulcateBlockInfo(Constants.BitsForFirstValue);
+                _buffer.AddValue(longValue, Constants.BitsForFirstValue);
+                _previousValue = longValue;
+                _hasStoredFirstValue = true;
+                return;
+            }
+
             long xorWithPrevious = _previousValue ^ longValue;
 
             if (xorWithPrevious == 0)
@@ -53,11 +64,10 @@ namespace BlueEyes
 
             _buffer.AddValue(1, 1);
 
-            var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong) xorWithPrevious);
+            var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong)xorWithPrevious);
             int expectedSize = Constants.LeadingZerosLengthBits + Constants.BlockSizeLengthBits + currentBlockInfo.BlockSize;
 
-            if (_hasStoredFirstValue &&
-                currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
+            if (currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
                 currentBlockInfo.TrailingZeros >= _previousBlockInfo.TrailingZeros &&
                 _previousBlockInfo.BlockSize < expectedSize)
             {
@@ -82,11 +92,6 @@ namespace BlueEyes
                 _buffer.AddValue(blockValue, currentBlockInfo.BlockSize);
 
                 _previousBlockInfo = currentBlockInfo;
-                
-                if (!_hasStoredFirstValue)
-                {
-                    _hasStoredFirstValue = true;
-                }
             }
 
             _previousValue = longValue;

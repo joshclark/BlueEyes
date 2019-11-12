@@ -11,16 +11,29 @@ namespace BlueEyes
         private readonly BitBuffer _buffer;
         private long _previousValue;
         private BlockInfo _previousBlockInfo;
+        private bool _hasReadFirstValue;
 
         public ValueReader(BitBuffer buffer)
         {
             _buffer = buffer;
+            _hasReadFirstValue = false;
         }
 
         public bool HasMoreValues => !_buffer.IsAtEndOfBuffer;
         
         public double ReadNextValue()
         {
+            if (_hasReadFirstValue == false)
+            {
+                _previousBlockInfo = BlockInfo.CalulcateBlockInfo(Constants.BitsForFirstValue);
+                var firstValue = (long)_buffer.ReadValue(Constants.BitsForFirstValue);
+
+                _previousValue = firstValue;
+                _hasReadFirstValue = true;
+
+                return BitConverter.Int64BitsToDouble(firstValue);
+            }
+
             var nonZeroValue = _buffer.ReadValue(1);
 
             if (nonZeroValue == 0)
