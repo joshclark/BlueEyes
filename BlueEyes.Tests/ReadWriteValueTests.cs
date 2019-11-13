@@ -10,12 +10,11 @@ namespace BlueEyes.Tests
 {
     public class ReadWriteValueTests
     {
-
-        [Fact]
-        public void WrittenValuesCanBeReadBackCorrectly()
+        [Theory]
+        [InlineData(new[] { 4, 8, 1.5, 1.6, 1.7, 1.7, 2.3, 22.0 / 7.0, 653.2, 653.02 })]
+        [InlineData(new double[] { 2, -1, 2, 1 })]
+        public void WrittenValuesCanBeReadBackCorrectly(double[] values)
         {
-            var values = new[] {4, 8, 1.5, 1.6, 1.7, 1.7, 2.3, 22.0 / 7.0, 653.2, 653.02};
-            
             var buffer = new BitBuffer();
             var writer = new ValueWriter(buffer);
 
@@ -23,7 +22,6 @@ namespace BlueEyes.Tests
             {
                 writer.AppendValue(value);
             }
-
             
             var reader = new ValueReader(buffer);
 

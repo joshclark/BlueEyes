@@ -16,7 +16,7 @@ namespace BlueEyes
         public ValueWriter(BitBuffer buffer)
         {
             _buffer = buffer;
-            _previousBlockInfo = new BlockInfo(0, 0);
+            _previousBlockInfo = new BlockInfo(int.MaxValue, 0);
             _hasStoredFirstValue = false;
         }
 
@@ -42,11 +42,10 @@ namespace BlueEyes
         public void AppendValue(double value)
         {
             long longValue = BitConverter.DoubleToInt64Bits(value);
-            
+
             if (_hasStoredFirstValue == false)
             {
                 // Store the first value as is.
-                _previousBlockInfo = BlockInfo.CalulcateBlockInfo(Constants.BitsForFirstValue);
                 _buffer.AddValue(longValue, Constants.BitsForFirstValue);
                 _previousValue = longValue;
                 _hasStoredFirstValue = true;
@@ -64,15 +63,13 @@ namespace BlueEyes
 
             _buffer.AddValue(1, 1);
 
-            var currentBlockInfo = BlockInfo.CalulcateBlockInfo((ulong)xorWithPrevious);
-            int expectedSize = Constants.LeadingZerosLengthBits + Constants.BlockSizeLengthBits + currentBlockInfo.BlockSize;
+            var currentBlockInfo = BlockInfo.CalulcateBlockInfo(xorWithPrevious);
 
             if (currentBlockInfo.LeadingZeros >= _previousBlockInfo.LeadingZeros &&
-                currentBlockInfo.TrailingZeros >= _previousBlockInfo.TrailingZeros &&
-                _previousBlockInfo.BlockSize < expectedSize)
+                currentBlockInfo.TrailingZeros >= _previousBlockInfo.TrailingZeros)
             {
                 // Control bit saying we should use the previous block information
-                _buffer.AddValue(1,1);
+                _buffer.AddValue(0, 1);
 
                 // Write the parts of the value that changed.
                 long blockValue = xorWithPrevious >> _previousBlockInfo.TrailingZeros;
@@ -81,7 +78,7 @@ namespace BlueEyes
             else
             {
                 // Control bit saying we need to provide new block information
-                _buffer.AddValue(0, 1);
+                _buffer.AddValue(1, 1);
 
                 // Details about the new block information
                 _buffer.AddValue(currentBlockInfo.LeadingZeros, Constants.LeadingZerosLengthBits);

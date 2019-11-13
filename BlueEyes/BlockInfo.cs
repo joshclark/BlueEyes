@@ -14,8 +14,14 @@ namespace BlueEyes
         public int BlockSize { get; }
 
 
-        public static BlockInfo CalulcateBlockInfo(ulong input)
+        public static BlockInfo CalulcateBlockInfo(long longInput)
         {
+            if (longInput < 0)
+            {
+                return new BlockInfo(0, 0);
+            }
+
+            var input = (ulong)longInput;
             int trailingZeros = 64;
             ulong mask = 1;
             for (int i = 0; i < 64; ++i, mask <<= 1)

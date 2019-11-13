@@ -17,15 +17,15 @@ namespace BlueEyes
         {
             _buffer = buffer;
             _hasReadFirstValue = false;
+            _previousBlockInfo = new BlockInfo(int.MaxValue, 0);
         }
 
         public bool HasMoreValues => !_buffer.IsAtEndOfBuffer;
-        
+
         public double ReadNextValue()
         {
-            if (_hasReadFirstValue == false)
+            if (!_hasReadFirstValue)
             {
-                _previousBlockInfo = BlockInfo.CalulcateBlockInfo(Constants.BitsForFirstValue);
                 var firstValue = (long)_buffer.ReadValue(Constants.BitsForFirstValue);
 
                 _previousValue = firstValue;
@@ -42,29 +42,24 @@ namespace BlueEyes
             }
 
             var usePreviousBlockInfo = _buffer.ReadValue(1);
-            long xorValue;
 
             if (usePreviousBlockInfo == 1)
             {
-                xorValue = (long) _buffer.ReadValue(_previousBlockInfo.BlockSize);
-                xorValue <<= _previousBlockInfo.TrailingZeros;
-            }
-            else
-            {
-                int leadingZeros = (int) _buffer.ReadValue(Constants.LeadingZerosLengthBits);
-                int blockSize = (int) _buffer.ReadValue(Constants.BlockSizeLengthBits) + Constants.BlockSizeAdjustment;
+                int leadingZeros = (int)_buffer.ReadValue(Constants.LeadingZerosLengthBits);
+                int blockSize = (byte)_buffer.ReadValue(Constants.BlockSizeLengthBits) + Constants.BlockSizeAdjustment;
+
                 int trailingZeros = 64 - blockSize - leadingZeros;
-                xorValue = (long) _buffer.ReadValue(blockSize);
-                xorValue <<= trailingZeros;
 
                 _previousBlockInfo = new BlockInfo(leadingZeros, trailingZeros);
             }
-
+          
+            long xorValue = (long)_buffer.ReadValue(_previousBlockInfo.BlockSize);
+            xorValue <<= _previousBlockInfo.TrailingZeros;
+            
             long value = xorValue ^ _previousValue;
             _previousValue = value;
 
             return BitConverter.Int64BitsToDouble(value);
-
         }
     }
 }
